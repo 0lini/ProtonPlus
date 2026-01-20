@@ -58,7 +58,20 @@ namespace ProtonPlus.Models {
 		public static async ReturnCode update_specific_runner (Models.Runners.Basic runner) {
 			string? response;
 
-			var code = yield Utils.Web.get_request ("%s?per_page=1".printf (runner.endpoint), runner.get_type, out response);
+			// Build query parameter based on API type
+			string query_param;
+			switch (runner.get_type) {
+				case Utils.Web.GetType.FORGEJO:
+					query_param = "limit=1";
+					break;
+				case Utils.Web.GetType.GITHUB:
+				case Utils.Web.GetType.GITLAB:
+				default:
+					query_param = "per_page=1";
+					break;
+			}
+
+			var code = yield Utils.Web.get_request ("%s?%s".printf (runner.endpoint, query_param), runner.get_type, out response);
 
 			if (code != ReturnCode.VALID_REQUEST)
 				return code;
